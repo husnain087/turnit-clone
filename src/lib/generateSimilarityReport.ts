@@ -422,34 +422,32 @@ export function generateSimilarityReport(report: PlagiarismReport, text: string,
     y += 8;
   });
 
-  // Exclude settings
+  // Exclude settings - matching Turnitin default style
   y += 4;
   addPageIfNeeded(30);
   doc.setDrawColor(200, 200, 200);
   doc.line(m, y, pw - m, y);
-  y += 6;
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(120, 120, 120);
-  doc.text("FILTER SETTINGS", m, y);
-  y += 6;
+  y += 8;
+  doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
+  doc.setTextColor(100, 100, 100);
   doc.text("Exclude quotes", m, y);
+  doc.setTextColor(60, 60, 60);
   doc.setFont("helvetica", "bold");
-  doc.text("On", m + 45, y);
+  doc.text("Off", m + 50, y);
   doc.setFont("helvetica", "normal");
+  doc.setTextColor(100, 100, 100);
   doc.text("Exclude matches", pw / 2, y);
+  doc.setTextColor(60, 60, 60);
   doc.setFont("helvetica", "bold");
-  doc.text("< 6 words", pw / 2 + 45, y);
-  y += 5;
+  doc.text("Off", pw / 2 + 50, y);
+  y += 7;
   doc.setFont("helvetica", "normal");
+  doc.setTextColor(100, 100, 100);
   doc.text("Exclude bibliography", m, y);
+  doc.setTextColor(60, 60, 60);
   doc.setFont("helvetica", "bold");
-  doc.text("On", m + 45, y);
-  doc.setFont("helvetica", "normal");
-  doc.text("Exclude small sources", pw / 2, y);
-  doc.setFont("helvetica", "bold");
-  doc.text("< 1%", pw / 2 + 45, y);
+  doc.text("On", m + 50, y);
 
   // (Source Details page removed)
 
