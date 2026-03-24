@@ -260,6 +260,9 @@ export function generateSimilarityReport(report: PlagiarismReport, text: string,
     });
     if (currentLine.length > 0) lines.push({ words: [...currentLine] });
 
+    // Track which source indices have already had their superscript shown
+    const shownIndices = new Set<number>();
+
     // Render each line LEFT-ALIGNED
     lines.forEach((line) => {
       addTextPageIfNeeded(textLineHeight);
@@ -270,9 +273,9 @@ export function generateSimilarityReport(report: PlagiarismReport, text: string,
         const hl = highlights.find((h) => w.start < h.end && w.end > h.start);
 
         if (hl) {
-          // Draw superscript index above the first word of this highlight
-          const isFirstWordOfHighlight = w.start <= hl.start + 2;
-          if (isFirstWordOfHighlight) {
+          // Draw superscript index only once per source index
+          if (!shownIndices.has(hl.idx)) {
+            shownIndices.add(hl.idx);
             doc.setFontSize(6);
             doc.setFont("helvetica", "bold");
             doc.setTextColor(hl.color[0], hl.color[1], hl.color[2]);

@@ -1,5 +1,5 @@
 import jsPDF from "jspdf";
-import { TURNITIN_HEADER_LOGO_BASE64, FAQ_DIAGRAM_BASE64, ICON_DOC_BASE64, ICON_SUBMIT_BASE64, ICON_UNIVERSITY_BASE64 } from "./pdfAssets";
+import { TURNITIN_HEADER_LOGO_BASE64, FAQ_DIAGRAM_BASE64, ICON_DOC_BASE64, ICON_SUBMIT_BASE64, ICON_UNIVERSITY_BASE64, AI_ROBOT_ICON_BASE64 } from "./pdfAssets";
 
 interface PlagiarismReport {
   similarity_score: number;
@@ -231,9 +231,10 @@ export function generateAIWritingReport(report: PlagiarismReport, text: string, 
   // Group 1: AI-generated only
   const aiGenPct = report.ai_probability;
   const aiGenSentences = Math.max(1, Math.round(aiGenPct / 5));
-  // Cyan circle icon
+  // Cyan bubble with robot icon
   doc.setFillColor(0, 188, 212);
-  doc.circle(m + 4, y + 1, 4, "F");
+  doc.circle(m + 4, y + 1, 5, "F");
+  try { doc.addImage(AI_ROBOT_ICON_BASE64, "PNG", m + 1, y - 2, 6, 6); } catch {}
   doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(50, 50, 50);
@@ -247,9 +248,10 @@ export function generateAIWritingReport(report: PlagiarismReport, text: string, 
 
   // Group 2: AI-generated text that was AI-paraphrased
   const paraphrasePct = report.paraphrase_score || 0;
-  // Purple circle icon
+  // Purple bubble with robot icon
   doc.setFillColor(156, 39, 176);
-  doc.circle(m + 4, y + 1, 4, "F");
+  doc.circle(m + 4, y + 1, 5, "F");
+  try { doc.addImage(AI_ROBOT_ICON_BASE64, "PNG", m + 1, y - 2, 6, 6); } catch {}
   doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(50, 50, 50);
