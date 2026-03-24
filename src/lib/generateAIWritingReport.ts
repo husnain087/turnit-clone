@@ -148,9 +148,11 @@ export function generateAIWritingReport(report: PlagiarismReport, text: string, 
   // Stats box on right (light pink, rounded edges)
   const boxX = pw - m - 50;
   const boxY = detailsStartY - 2;
-  doc.setFillColor(255, 235, 238);
+  doc.setFillColor(255, 245, 247);
+  doc.setGState(new (doc as any).GState({ opacity: 0.5 }));
   doc.roundedRect(boxX, boxY, 50, 36, 3, 3, "F");
-  doc.setDrawColor(240, 200, 210);
+  doc.setGState(new (doc as any).GState({ opacity: 1 }));
+  doc.setDrawColor(245, 220, 225);
   doc.roundedRect(boxX, boxY, 50, 36, 3, 3, "S");
   doc.setFontSize(8);
   doc.setFont("helvetica", "bold");
