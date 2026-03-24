@@ -231,9 +231,10 @@ export function generateAIWritingReport(report: PlagiarismReport, text: string, 
   // Group 1: AI-generated only
   const aiGenPct = report.ai_probability;
   const aiGenSentences = Math.max(1, Math.round(aiGenPct / 5));
-  // Cyan circle icon
+  // Cyan bubble with robot icon
   doc.setFillColor(0, 188, 212);
-  doc.circle(m + 4, y + 1, 4, "F");
+  doc.circle(m + 4, y + 1, 5, "F");
+  try { doc.addImage(AI_ROBOT_ICON_BASE64, "PNG", m + 1, y - 2, 6, 6); } catch {}
   doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(50, 50, 50);
