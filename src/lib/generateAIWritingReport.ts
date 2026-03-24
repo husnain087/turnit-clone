@@ -145,12 +145,12 @@ export function generateAIWritingReport(report: PlagiarismReport, text: string, 
     y += 10;
   });
 
-  // Stats box on right (sharp square edges, very light pink)
+  // Stats box on right (sharp square edges, ultra light pink)
   const boxX = pw - m - 50;
   const boxY = detailsStartY - 2;
-  doc.setFillColor(255, 245, 248);
+  doc.setFillColor(255, 250, 251);
   doc.rect(boxX, boxY, 50, 36, "F");
-  doc.setDrawColor(245, 225, 230);
+  doc.setDrawColor(248, 238, 240);
   doc.rect(boxX, boxY, 50, 36, "S");
   doc.setFontSize(8);
   doc.setFont("helvetica", "bold");
@@ -169,20 +169,23 @@ export function generateAIWritingReport(report: PlagiarismReport, text: string, 
   doc.setDrawColor(200, 200, 200);
   doc.line(m, headerHeight, pw - m, headerHeight);
 
-  // AI % detected section (left) + Caution box (right - extended to border)
+  // AI % detected section (left) + Caution box (right)
   doc.setFontSize(9);
   const aiDesc = "The percentage indicates the combined amount of likely AI-generated text as well as likely AI-generated text that was also likely AI-paraphrased.";
-  const aiLines = doc.splitTextToSize(aiDesc, maxW / 2 - 20);
+  const leftTextW = maxW * 0.48;
+  const aiLines = doc.splitTextToSize(aiDesc, leftTextW);
   const descHeight = aiLines.length * 5;
 
-  const cautionX = m + maxW * 0.42;
-  const cautionBoxW = pw - m - cautionX; // wider - stretch to right margin
+  const cautionX = m + leftTextW + 6;
+  const cautionBoxW = pw - m - cautionX;
   const cautionText = "It is essential to understand the limitations of AI detection before making decisions about a student's work. We encourage you to learn more about Turnitin's AI detection capabilities before using the tool.";
-  const cautionLines = doc.splitTextToSize(cautionText, cautionBoxW - 16);
-  const cautionBoxH = 14 + cautionLines.length * 4.5; // compact height
-  const boxHeight = Math.max(cautionBoxH, 30 + descHeight);
+  doc.setFontSize(6.5);
+  const cautionLines = doc.splitTextToSize(cautionText, cautionBoxW - 12);
+  const cautionBoxH = 12 + cautionLines.length * 3.8;
 
-  // Light blue caution box (wider, shorter)
+  const boxHeight = Math.max(cautionBoxH + 8, 30 + descHeight);
+
+  // Light blue caution box
   doc.setFillColor(235, 245, 252);
   doc.roundedRect(cautionX, y + 4, cautionBoxW, cautionBoxH, 3, 3, "F");
 
@@ -191,25 +194,25 @@ export function generateAIWritingReport(report: PlagiarismReport, text: string, 
   doc.setFontSize(24);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(50, 50, 50);
-  doc.text(`${aiPercentDisplay} detected as AI`, m, y + 18);
+  doc.text(`${aiPercentDisplay} detected as AI`, m, y + 16);
 
-  doc.setFontSize(9);
+  doc.setFontSize(8);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(80, 80, 80);
   aiLines.forEach((line: string, i: number) => {
-    doc.text(line, m, y + 28 + i * 5);
+    doc.text(line, m, y + 24 + i * 4.5);
   });
 
-  // Right: Caution text (compact layout)
+  // Right: Caution text inside box
   doc.setFont("helvetica", "bold");
   doc.setTextColor(50, 50, 50);
-  doc.setFontSize(8);
-  doc.text("Caution: Review required.", cautionX + 8, y + 12);
+  doc.setFontSize(7);
+  doc.text("Caution: Review required.", cautionX + 6, y + 11);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(80, 80, 80);
-  doc.setFontSize(7);
+  doc.setFontSize(6.5);
   cautionLines.forEach((line: string, i: number) => {
-    doc.text(line, cautionX + 8, y + 18 + i * 4.5);
+    doc.text(line, cautionX + 6, y + 16 + i * 3.8);
   });
 
   y += boxHeight + 10;
