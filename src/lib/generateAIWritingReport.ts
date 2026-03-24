@@ -169,20 +169,20 @@ export function generateAIWritingReport(report: PlagiarismReport, text: string, 
   doc.setDrawColor(200, 200, 200);
   doc.line(m, headerHeight, pw - m, headerHeight);
 
-  // AI % detected section (left) + Caution box (right)
+  // AI % detected section (left) + Caution box (right - extended to border)
   doc.setFontSize(9);
-  const aiDesc = "AI detection includes the possibility of false positives. Although some text in this submission is likely AI generated, scores below the 20% threshold are not surfaced because they have a higher likelihood of false positives.";
+  const aiDesc = "The percentage indicates the combined amount of likely AI-generated text as well as likely AI-generated text that was also likely AI-paraphrased.";
   const aiLines = doc.splitTextToSize(aiDesc, maxW / 2 - 20);
   const descHeight = aiLines.length * 5;
 
   const cautionX = m + maxW / 2 + 4;
-  const cautionBoxW = maxW / 2 - 4;
+  const cautionBoxW = pw - m - cautionX; // extend to right margin
   const cautionText = "It is essential to understand the limitations of AI detection before making decisions about a student's work. We encourage you to learn more about Turnitin's AI detection capabilities before using the tool.";
   const cautionLines = doc.splitTextToSize(cautionText, cautionBoxW - 20);
   const cautionBoxH = Math.max(60, 26 + cautionLines.length * 5);
   const boxHeight = Math.max(cautionBoxH, 30 + descHeight);
 
-  // Light blue caution box (right side)
+  // Light blue caution box (right side, extended to border)
   doc.setFillColor(235, 245, 252);
   doc.roundedRect(cautionX, y, cautionBoxW, boxHeight, 3, 3, "F");
 
@@ -211,6 +211,52 @@ export function generateAIWritingReport(report: PlagiarismReport, text: string, 
   });
 
   y += boxHeight + 10;
+
+  // ─── DETECTION GROUPS ───
+  doc.setDrawColor(200, 200, 200);
+  doc.line(m, y, pw - m, y);
+  y += 8;
+
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(50, 50, 50);
+  doc.text("Detection Groups", m, y);
+  y += 10;
+
+  // Group 1: AI-generated only
+  const aiGenPct = report.ai_probability;
+  const aiGenSentences = Math.max(1, Math.round(aiGenPct / 5));
+  // Cyan circle icon
+  doc.setFillColor(0, 188, 212);
+  doc.circle(m + 4, y + 1, 4, "F");
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(50, 50, 50);
+  doc.text(`${aiGenSentences}   AI-generated only   ${aiGenPct}%`, m + 12, y + 2);
+  y += 6;
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(100, 100, 100);
+  doc.text("Likely AI-generated text from a large-language model.", m + 12, y + 2);
+  y += 12;
+
+  // Group 2: AI-generated text that was AI-paraphrased
+  const paraphrasePct = report.paraphrase_score || 0;
+  // Purple circle icon
+  doc.setFillColor(156, 39, 176);
+  doc.circle(m + 4, y + 1, 4, "F");
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(50, 50, 50);
+  doc.text(`0   AI-generated text that was AI-paraphrased   ${paraphrasePct}%`, m + 12, y + 2);
+  y += 6;
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(100, 100, 100);
+  doc.text("Likely AI-generated text that was likely revised using an AI-paraphrase tool", m + 12, y + 2);
+  y += 4;
+  doc.text("or word spinner.", m + 12, y + 2);
+  y += 12;
 
   // Disclaimer section
   doc.setDrawColor(200, 200, 200);
