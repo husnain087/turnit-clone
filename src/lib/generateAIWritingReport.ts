@@ -175,16 +175,16 @@ export function generateAIWritingReport(report: PlagiarismReport, text: string, 
   const aiLines = doc.splitTextToSize(aiDesc, maxW / 2 - 20);
   const descHeight = aiLines.length * 5;
 
-  const cautionX = m + maxW / 2 + 4;
-  const cautionBoxW = pw - m - cautionX; // extend to right margin
+  const cautionX = m + maxW * 0.42;
+  const cautionBoxW = pw - m - cautionX; // wider - stretch to right margin
   const cautionText = "It is essential to understand the limitations of AI detection before making decisions about a student's work. We encourage you to learn more about Turnitin's AI detection capabilities before using the tool.";
-  const cautionLines = doc.splitTextToSize(cautionText, cautionBoxW - 20);
-  const cautionBoxH = Math.max(60, 26 + cautionLines.length * 5);
+  const cautionLines = doc.splitTextToSize(cautionText, cautionBoxW - 16);
+  const cautionBoxH = 14 + cautionLines.length * 4.5; // compact height
   const boxHeight = Math.max(cautionBoxH, 30 + descHeight);
 
-  // Light blue caution box (right side, extended to border)
+  // Light blue caution box (wider, shorter)
   doc.setFillColor(235, 245, 252);
-  doc.roundedRect(cautionX, y, cautionBoxW, boxHeight, 3, 3, "F");
+  doc.roundedRect(cautionX, y + 4, cautionBoxW, cautionBoxH, 3, 3, "F");
 
   // Left: AI percentage
   const aiPercentDisplay = report.ai_probability < 20 ? `*%` : `${report.ai_probability}%`;
