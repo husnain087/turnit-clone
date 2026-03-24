@@ -200,14 +200,16 @@ export function generateAIWritingReport(report: PlagiarismReport, text: string, 
     doc.text(line, m, y + 28 + i * 5);
   });
 
-  // Right: Caution text
+  // Right: Caution text (compact layout)
   doc.setFont("helvetica", "bold");
   doc.setTextColor(50, 50, 50);
-  doc.text("Caution: Review required.", cautionX + 10, y + 16);
+  doc.setFontSize(8);
+  doc.text("Caution: Review required.", cautionX + 8, y + 12);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(80, 80, 80);
+  doc.setFontSize(7);
   cautionLines.forEach((line: string, i: number) => {
-    doc.text(line, cautionX + 10, y + 26 + i * 5);
+    doc.text(line, cautionX + 8, y + 18 + i * 4.5);
   });
 
   y += boxHeight + 10;
