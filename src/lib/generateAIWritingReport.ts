@@ -145,13 +145,13 @@ export function generateAIWritingReport(report: PlagiarismReport, text: string, 
     y += 10;
   });
 
-  // Stats box on right (very light, square edges, smaller)
+  // Stats box on right (light pink, rounded edges)
   const boxX = pw - m - 50;
   const boxY = detailsStartY - 2;
-  doc.setFillColor(252, 253, 255);
-  doc.rect(boxX, boxY, 50, 36, "F");
-  doc.setDrawColor(230, 232, 238);
-  doc.rect(boxX, boxY, 50, 36, "S");
+  doc.setFillColor(255, 235, 238);
+  doc.roundedRect(boxX, boxY, 50, 36, 3, 3, "F");
+  doc.setDrawColor(240, 200, 210);
+  doc.roundedRect(boxX, boxY, 50, 36, 3, 3, "S");
   doc.setFontSize(8);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(80, 80, 80);
