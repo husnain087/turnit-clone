@@ -153,13 +153,41 @@ export function generateSimilarityReport(report: PlagiarismReport, text: string,
   const extractKeyPhrases = (sectionText: string, fullText: string, startSearchFrom: number): { start: number; end: number }[] => {
     const ranges: { start: number; end: number }[] = [];
     const lowerFull = fullText.toLowerCase();
+    const words = sectionText.split(/\s+/).filter(w => w.length > 0);
     const sectionStart = lowerFull.indexOf(sectionText.toLowerCase().slice(0, 60), startSearchFrom);
     if (sectionStart < 0) return ranges;
 
-    const sectionEnd = sectionStart + Math.min(sectionText.length, fullText.length - sectionStart);
+    const totalWords = words.length;
 
-    // Highlight the entire matched range as one block
-    ranges.push({ start: sectionStart, end: sectionEnd });
+    if (totalWords <= 4) {
+      // Short section: highlight entire thing
+      const sectionEnd = sectionStart + Math.min(sectionText.length, fullText.length - sectionStart);
+      ranges.push({ start: sectionStart, end: sectionEnd });
+      return ranges;
+    }
+
+    // For longer sections: highlight individual scattered words (not full lines)
+    // Pick ~30-50% of words spread throughout the section
+    const sectionSlice = fullText.slice(sectionStart, sectionStart + sectionText.length);
+    const lowerSlice = sectionSlice.toLowerCase();
+    const wordsToHighlight = Math.max(2, Math.ceil(totalWords * 0.35));
+    const step = Math.max(1, Math.floor(totalWords / wordsToHighlight));
+
+    let searchPos = 0;
+    for (let i = 0; i < totalWords; i += step) {
+      const word = words[i];
+      if (word.length < 3) continue; // skip tiny words
+      const wIdx = lowerSlice.indexOf(word.toLowerCase(), searchPos);
+      if (wIdx >= 0) {
+        const absStart = sectionStart + wIdx;
+        const absEnd = absStart + word.length;
+        if (ranges.length === 0 || absStart > ranges[ranges.length - 1].end) {
+          ranges.push({ start: absStart, end: absEnd });
+        }
+        searchPos = wIdx + word.length;
+      }
+    }
+
     return ranges;
   };
 
