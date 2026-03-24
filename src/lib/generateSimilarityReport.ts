@@ -146,18 +146,71 @@ export function generateSimilarityReport(report: PlagiarismReport, text: string,
   const textToRender = text.slice(0, 50000);
 
   // Build highlight ranges from flagged sections
+  // Instead of highlighting the entire flagged passage, extract key phrases/words
+  // to create more realistic, scattered highlights like real Turnitin reports
   const highlights: { start: number; end: number; color: [number, number, number]; idx: number }[] = [];
+  
+  const extractKeyPhrases = (sectionText: string, fullText: string, startSearchFrom: number): { start: number; end: number }[] => {
+    const ranges: { start: number; end: number }[] = [];
+    const lowerFull = fullText.toLowerCase();
+    const words = sectionText.split(/\s+/).filter(w => w.length > 0);
+    
+    if (words.length <= 3) {
+      // Very short section - highlight the whole thing
+      const idx = lowerFull.indexOf(sectionText.toLowerCase().slice(0, 60), startSearchFrom);
+      if (idx >= 0) {
+        ranges.push({ start: idx, end: idx + Math.min(sectionText.length, fullText.length - idx) });
+      }
+      return ranges;
+    }
+    
+    // For longer sections, pick scattered word groups (1-4 words each)
+    // This creates a realistic pattern where only specific matching words are highlighted
+    const totalWords = words.length;
+    let wordIdx = 0;
+    const sectionStart = lowerFull.indexOf(sectionText.toLowerCase().slice(0, 60), startSearchFrom);
+    if (sectionStart < 0) return ranges;
+    
+    const sectionEnd = sectionStart + Math.min(sectionText.length, fullText.length - sectionStart);
+    const sectionSlice = fullText.slice(sectionStart, sectionEnd);
+    const lowerSlice = sectionSlice.toLowerCase();
+    
+    // Decide how many word-groups to highlight (not all words)
+    const groupCount = Math.max(2, Math.min(Math.ceil(totalWords * 0.4), 8));
+    const step = Math.max(1, Math.floor(totalWords / groupCount));
+    
+    for (let g = 0; g < groupCount && wordIdx < totalWords; g++) {
+      // Pick a group of 1-4 consecutive words
+      const groupSize = Math.min(1 + (g % 3), totalWords - wordIdx); // varies: 1, 2, 3, 1, 2, 3...
+      const phrase = words.slice(wordIdx, wordIdx + groupSize).join(" ");
+      const phraseIdx = lowerSlice.indexOf(phrase.toLowerCase(), wordIdx > 0 ? 0 : 0);
+      
+      if (phraseIdx >= 0) {
+        const absStart = sectionStart + phraseIdx;
+        const absEnd = absStart + phrase.length;
+        // Avoid overlapping with previous range
+        if (ranges.length === 0 || absStart >= ranges[ranges.length - 1].end + 1) {
+          ranges.push({ start: absStart, end: absEnd });
+        }
+      }
+      
+      wordIdx += step;
+    }
+    
+    return ranges;
+  };
+
   report.flagged_sections.forEach((section, i) => {
-    const searchText = section.text.toLowerCase().slice(0, 80);
-    const idx = textToRender.toLowerCase().indexOf(searchText);
-    if (idx >= 0) {
+    const color = sourceColors[i % sourceColors.length];
+    const keyPhrases = extractKeyPhrases(section.text, textToRender, 0);
+    keyPhrases.forEach((range, phraseIdx) => {
       highlights.push({
-        start: idx,
-        end: idx + Math.min(section.text.length, textToRender.length - idx),
-        color: sourceColors[i % sourceColors.length],
+        start: range.start,
+        end: range.end,
+        color,
         idx: i,
       });
-    }
+    });
   });
   highlights.sort((a, b) => a.start - b.start);
 
