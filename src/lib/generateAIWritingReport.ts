@@ -370,30 +370,40 @@ export function generateAIWritingReport(report: PlagiarismReport, text: string, 
   let currentHighlightLen = 0;
   aiHighlights.forEach(h => { currentHighlightLen += (h.end - h.start); });
 
-  // If we need more highlighting, add continuous blocks from the beginning
+  // If we need more highlighting, highlight in blocks of 3-4 paragraphs with 1-2 paragraph gaps
   if (currentHighlightLen < targetHighlightLen) {
-    const remaining = targetHighlightLen - currentHighlightLen;
-    // Find sentences/paragraphs to highlight to fill the gap
-    const sentences = textToRender.split(/(?<=[.!?])\s+/);
-    let pos = 0;
-    let added = 0;
+    const paraSplits = textToRender.split(/\n\s*\n/);
+    let paraPos = 0;
+    const paraRanges: { start: number; end: number }[] = [];
 
-    for (const sentence of sentences) {
-      if (added >= remaining) break;
-      const sentStart = textToRender.indexOf(sentence, Math.max(0, pos - 2));
-      if (sentStart < 0) { pos += sentence.length + 1; continue; }
-      const sentEnd = sentStart + sentence.length;
-
-      // Check if already highlighted
-      const alreadyHighlighted = aiHighlights.some(h =>
-        sentStart >= h.start && sentEnd <= h.end
-      );
-
-      if (!alreadyHighlighted) {
-        aiHighlights.push({ start: sentStart, end: sentEnd });
-        added += sentence.length;
+    // Build paragraph position map
+    for (const p of paraSplits) {
+      const trimmed = p.trim();
+      if (!trimmed) { paraPos += p.length + 1; continue; }
+      const pStart = textToRender.indexOf(trimmed, Math.max(0, paraPos - 2));
+      if (pStart >= 0) {
+        paraRanges.push({ start: pStart, end: pStart + trimmed.length });
       }
-      pos = sentEnd + 1;
+      paraPos += p.length + 1;
+    }
+
+    // Highlight in pattern: 3-4 paragraphs highlighted, then 1-2 gap
+    let added = currentHighlightLen;
+    let i = 0;
+    while (i < paraRanges.length && added < targetHighlightLen) {
+      // Highlight 3-4 paragraphs
+      const blockSize = 3 + (i % 2); // alternates 3 and 4
+      for (let j = 0; j < blockSize && i < paraRanges.length && added < targetHighlightLen; j++, i++) {
+        const pr = paraRanges[i];
+        const alreadyHighlighted = aiHighlights.some(h => pr.start >= h.start && pr.end <= h.end);
+        if (!alreadyHighlighted) {
+          aiHighlights.push({ start: pr.start, end: pr.end });
+          added += (pr.end - pr.start);
+        }
+      }
+      // Skip 1-2 paragraphs as gap
+      const gapSize = 1 + (i % 2); // alternates 1 and 2
+      i += gapSize;
     }
   }
 
