@@ -560,5 +560,6 @@ export function generateSimilarityReport(report: PlagiarismReport, text: string,
     // Footers removed for similarity report
   }
 
-  doc.save("Turnitin_Similarity_Report.pdf");
+  const safeName = (title || "Document").replace(/\.[^/.]+$/, "");
+  doc.save(`${safeName}_Similarity_Report.pdf`);
 }
