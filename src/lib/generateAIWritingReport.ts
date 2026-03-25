@@ -145,19 +145,19 @@ export function generateAIWritingReport(report: PlagiarismReport, text: string, 
     y += 10;
   });
 
-  // Stats box on right (sharp square edges, ultra light pink)
-  const boxX = pw - m - 50;
+  // Stats box on right (sharp square edges, ultra light pink, compact)
+  const boxX = pw - m - 42;
   const boxY = detailsStartY - 2;
   doc.setFillColor(255, 250, 251);
-  doc.rect(boxX, boxY, 50, 36, "F");
+  doc.rect(boxX, boxY, 42, 28, "F");
   doc.setDrawColor(248, 238, 240);
-  doc.rect(boxX, boxY, 50, 36, "S");
-  doc.setFontSize(8);
+  doc.rect(boxX, boxY, 42, 28, "S");
+  doc.setFontSize(7);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(80, 80, 80);
-  doc.text(`${pageCount} Pages`, boxX + 8, boxY + 12);
-  doc.text(`${wordCount.toLocaleString()} Words`, boxX + 8, boxY + 22);
-  doc.text(`${charCount.toLocaleString()} Characters`, boxX + 8, boxY + 32);
+  doc.text(`${pageCount} Pages`, boxX + 6, boxY + 9);
+  doc.text(`${wordCount.toLocaleString()} Words`, boxX + 6, boxY + 17);
+  doc.text(`${charCount.toLocaleString()} Characters`, boxX + 6, boxY + 25);
 
   // ═══════════════════════════════════════════════════════════════
   // PAGE 2: AI WRITING OVERVIEW
@@ -421,8 +421,8 @@ export function generateAIWritingReport(report: PlagiarismReport, text: string, 
   aiHighlights.push(...merged);
 
   // Render document text with AI highlighting
-  const textFontSize = 10;
-  const lineHeight = 5.5;
+  const textFontSize = 8.5;
+  const lineHeight = 4.8;
   doc.setFontSize(textFontSize);
   doc.setFont("helvetica", "normal");
 
@@ -511,5 +511,6 @@ export function generateAIWritingReport(report: PlagiarismReport, text: string, 
     drawFooter(p, totalPages, section);
   }
 
-  doc.save("Turnitin_AI_Writing_Report.pdf");
+  const safeName = (title || "Document").replace(/\.[^/.]+$/, "");
+  doc.save(`${safeName}_AI_Writing_Report.pdf`);
 }
