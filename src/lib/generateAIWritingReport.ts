@@ -347,19 +347,68 @@ export function generateAIWritingReport(report: PlagiarismReport, text: string, 
   doc.addPage();
   y = contentTop;
 
-  // Build highlight ranges from flagged_sections
+  // Build highlight ranges based on AI probability percentage
   const textToRender = text.slice(0, 50000);
   const lowerText = textToRender.toLowerCase();
   const aiHighlights: { start: number; end: number }[] = [];
+
+  // First, add flagged sections
   report.flagged_sections.forEach((section) => {
     const needle = section.text.toLowerCase().slice(0, 200);
     if (!needle) return;
-    let searchFrom = 0;
-    const idx = lowerText.indexOf(needle, searchFrom);
+    const idx = lowerText.indexOf(needle, 0);
     if (idx >= 0) {
       aiHighlights.push({ start: idx, end: idx + section.text.length });
     }
   });
+
+  // Calculate how much text should be highlighted based on ai_probability
+  const totalLen = textToRender.length;
+  const targetHighlightLen = Math.floor(totalLen * (report.ai_probability / 100));
+
+  // Calculate currently highlighted length
+  let currentHighlightLen = 0;
+  aiHighlights.forEach(h => { currentHighlightLen += (h.end - h.start); });
+
+  // If we need more highlighting, add continuous blocks from the beginning
+  if (currentHighlightLen < targetHighlightLen) {
+    const remaining = targetHighlightLen - currentHighlightLen;
+    // Find sentences/paragraphs to highlight to fill the gap
+    const sentences = textToRender.split(/(?<=[.!?])\s+/);
+    let pos = 0;
+    let added = 0;
+
+    for (const sentence of sentences) {
+      if (added >= remaining) break;
+      const sentStart = textToRender.indexOf(sentence, Math.max(0, pos - 2));
+      if (sentStart < 0) { pos += sentence.length + 1; continue; }
+      const sentEnd = sentStart + sentence.length;
+
+      // Check if already highlighted
+      const alreadyHighlighted = aiHighlights.some(h =>
+        sentStart >= h.start && sentEnd <= h.end
+      );
+
+      if (!alreadyHighlighted) {
+        aiHighlights.push({ start: sentStart, end: sentEnd });
+        added += sentence.length;
+      }
+      pos = sentEnd + 1;
+    }
+  }
+
+  // Sort and merge overlapping highlights
+  aiHighlights.sort((a, b) => a.start - b.start);
+  const merged: { start: number; end: number }[] = [];
+  aiHighlights.forEach(h => {
+    if (merged.length > 0 && h.start <= merged[merged.length - 1].end) {
+      merged[merged.length - 1].end = Math.max(merged[merged.length - 1].end, h.end);
+    } else {
+      merged.push({ ...h });
+    }
+  });
+  aiHighlights.length = 0;
+  aiHighlights.push(...merged);
 
   // Render document text with AI highlighting
   const textFontSize = 10;
