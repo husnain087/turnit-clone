@@ -598,5 +598,5 @@ export function generateSimilarityReport(report: PlagiarismReport, text: string,
   }
 
   const safeName = (title || "Document").replace(/\.[^/.]+$/, "");
-  doc.save(`${safeName}_Similarity_Report.pdf`);
+  doc.save(`${safeName}.pdf`);
 }
