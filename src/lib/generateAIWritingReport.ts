@@ -512,5 +512,5 @@ export function generateAIWritingReport(report: PlagiarismReport, text: string, 
   }
 
   const safeName = (title || "Document").replace(/\.[^/.]+$/, "");
-  doc.save(`${safeName}_AI_Writing_Report.pdf`);
+  doc.save(`${safeName}.pdf`);
 }
