@@ -89,11 +89,27 @@ export function generateSimilarityReport(report: PlagiarismReport, text: string,
 
   // ─── PAGE 1: COVER PAGE ───
   y = ph * 0.3;
-  doc.setFontSize(36);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(30, 30, 30);
-  doc.text(fileName, pw / 2, y, { align: "center" });
-  y += 12;
+
+  // Auto-size filename to fit page width, wrapping if needed
+  const coverMaxW = pw - m * 2 - 10;
+  let coverFontSize = 36;
+  doc.setFontSize(coverFontSize);
+  let nameWidth = doc.getTextWidth(fileName);
+  // Shrink font if too wide even for wrapping
+  while (coverFontSize > 14 && nameWidth > coverMaxW * 2.5) {
+    coverFontSize -= 2;
+    doc.setFontSize(coverFontSize);
+    nameWidth = doc.getTextWidth(fileName);
+  }
+  // Wrap the filename into multiple lines if needed
+  const coverLines = doc.splitTextToSize(fileName, coverMaxW);
+  const lineHeight = coverFontSize * 0.45;
+  for (let i = 0; i < coverLines.length; i++) {
+    doc.text(coverLines[i], pw / 2, y + i * lineHeight, { align: "center" });
+  }
+  y += coverLines.length * lineHeight + 4;
   doc.setFontSize(12);
   doc.setFont("helvetica", "italic");
   doc.setTextColor(120, 120, 120);
