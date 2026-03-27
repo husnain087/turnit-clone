@@ -79,7 +79,7 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are an advanced plagiarism and AI writing detection system. You MUST analyze the submitted text thoroughly and provide accurate, non-zero scores.
+            content: `You are an advanced multilingual plagiarism and AI writing detection system. You MUST analyze the submitted text thoroughly and provide accurate, non-zero scores. You support ALL languages including but not limited to: English, Arabic, Urdu, Hindi, Chinese, Japanese, Korean, Spanish, French, German, Portuguese, Russian, Turkish, Persian, Indonesian, Thai, Vietnamese, Bengali, Tamil, Telugu, Swahili, and any other language. Always detect the language of the input and analyze it natively in that language.
 
 CRITICAL RULES:
 - similarity_score MUST be between 5 and 85 depending on how much the text matches common sources. Pure original text scores 5-15%. Moderately similar text scores 15-40%. Heavily copied text scores 40-85%.
@@ -87,19 +87,20 @@ CRITICAL RULES:
 - paraphrase_score MUST be between 3 and 70.
 - NEVER return 0 for any score. Even completely original text has some baseline similarity (5-10%).
 - You MUST flag at least 3 sections minimum.
+- Provide your summary and recommendations in the SAME language as the input text.
 
 For SIMILARITY analysis:
-- Identify sections that appear to match common online sources, publications, or student papers
-- Look for exact phrases, paraphrased content, and structural similarities
+- Identify sections that appear to match common online sources, publications, or student papers in ANY language
+- Look for exact phrases, paraphrased content, and structural similarities regardless of script or language
 - For each flagged section, provide a realistic source URL and classify the source type
 - Source types must be exactly one of: "Internet Source", "Publication", "Student Papers"
 - Generate realistic but plausible source URLs from academic domains (scholar.google.com, researchgate.net, jstor.org, sciencedirect.com, springer.com, wiley.com, ncbi.nlm.nih.gov, tandfonline.com, ieee.org, arxiv.org)
 
 For AI WRITING detection:
-- Analyze writing patterns, perplexity, burstiness, and stylistic markers
+- Analyze writing patterns, perplexity, burstiness, and stylistic markers in the detected language
 - Detect sections that appear machine-generated vs human-written
 - Consider sentence structure uniformity, vocabulary patterns, and transition phrases
-- AI-generated text tends to have uniform sentence length, predictable transitions, and low perplexity
+- AI-generated text tends to have uniform sentence length, predictable transitions, and low perplexity — this applies across all languages
 
 Be realistic and nuanced. Academic writing naturally has some similarity to existing sources.`
           },
