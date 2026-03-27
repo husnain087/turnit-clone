@@ -36,9 +36,33 @@ export async function extractTextFromFile(file: File): Promise<string> {
     return result.value;
   }
 
-  // DOC (old format)
+  // DOC (old format) - basic text extraction
   if (ext === "doc" || type === "application/msword") {
-    throw new Error("Old .doc format is not supported. Please save as .docx and try again.");
+    const arrayBuffer = await file.arrayBuffer();
+    const uint8 = new Uint8Array(arrayBuffer);
+    // Extract readable text from binary .doc format
+    const textChunks: string[] = [];
+    let currentChunk = "";
+    for (let i = 0; i < uint8.length; i++) {
+      const byte = uint8[i];
+      // Accept printable ASCII, newlines, tabs
+      if ((byte >= 32 && byte <= 126) || byte === 10 || byte === 13 || byte === 9) {
+        currentChunk += String.fromCharCode(byte);
+      } else {
+        if (currentChunk.trim().length > 3) {
+          textChunks.push(currentChunk.trim());
+        }
+        currentChunk = "";
+      }
+    }
+    if (currentChunk.trim().length > 3) {
+      textChunks.push(currentChunk.trim());
+    }
+    const extracted = textChunks.join(" ").replace(/\s+/g, " ").trim();
+    if (!extracted || extracted.length < 10) {
+      throw new Error("Could not extract text from .doc file. Please save as .docx and try again.");
+    }
+    return extracted;
   }
 
   // RTF - read as text and strip RTF tags
