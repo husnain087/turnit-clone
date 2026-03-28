@@ -475,10 +475,22 @@ export function generateSimilarityReport(report: PlagiarismReport, text: string,
       displayText = section.reason;
     }
     
-    // Wrap source text to multiple lines
+    // Wrap source text to multiple lines - break long URLs/words that exceed width
     doc.setFontSize(11);
     doc.setFont("helvetica", "normal");
-    const sourceLines = doc.splitTextToSize(displayText, maxW - 55);
+    const sourceMaxW = maxW - 55;
+    // Pre-break any long continuous strings (URLs) before splitTextToSize
+    let safeDisplayText = displayText;
+    if (doc.getTextWidth(displayText) > sourceMaxW && !displayText.includes(' ')) {
+      // Insert zero-width spaces to allow wrapping of long URLs
+      let broken = '';
+      for (let ci = 0; ci < displayText.length; ci++) {
+        broken += displayText[ci];
+        if (ci > 0 && ci % 40 === 0) broken += ' ';
+      }
+      safeDisplayText = broken;
+    }
+    const sourceLines = doc.splitTextToSize(safeDisplayText, sourceMaxW);
     const blockHeight = sourceLines.length * 5.5 + 16;
     
     addPageIfNeeded(blockHeight + 5);
