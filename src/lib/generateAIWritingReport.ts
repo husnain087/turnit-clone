@@ -444,6 +444,23 @@ export function generateAIWritingReport(report: PlagiarismReport, text: string, 
     let currentLine: { text: string; start: number; end: number }[] = [];
     let lineW = 0;
 
+    // Helper to break a single oversized word into chunks that fit maxW
+    const breakWord = (word: string, wStart: number): { text: string; start: number; end: number }[] => {
+      const chunks: { text: string; start: number; end: number }[] = [];
+      let pos = 0;
+      while (pos < word.length) {
+        let end = pos + 1;
+        while (end <= word.length && doc.getTextWidth(word.slice(pos, end)) <= maxW) {
+          end++;
+        }
+        if (end > pos + 1) end--;
+        if (end === pos) end = pos + 1;
+        chunks.push({ text: word.slice(pos, end), start: wStart + pos, end: wStart + end });
+        pos = end;
+      }
+      return chunks;
+    };
+
     words.forEach((word) => {
       const wStart = charPos;
       const wEnd = charPos + word.length;
@@ -451,6 +468,26 @@ export function generateAIWritingReport(report: PlagiarismReport, text: string, 
       if (word.match(/^\s+$/)) return;
 
       const ww = doc.getTextWidth(word);
+
+      // If a single word is wider than maxW, break it into chunks
+      if (ww > maxW) {
+        if (currentLine.length > 0) {
+          lines.push([...currentLine]);
+          currentLine = [];
+          lineW = 0;
+        }
+        const chunks = breakWord(word, wStart);
+        chunks.forEach((chunk, ci) => {
+          if (ci < chunks.length - 1) {
+            lines.push([chunk]);
+          } else {
+            currentLine = [chunk];
+            lineW = doc.getTextWidth(chunk.text);
+          }
+        });
+        return;
+      }
+
       if (currentLine.length > 0 && lineW + spaceW + ww > maxW) {
         lines.push([...currentLine]);
         currentLine = [{ text: word, start: wStart, end: wEnd }];
