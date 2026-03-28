@@ -233,7 +233,8 @@ export function generateSimilarityReport(report: PlagiarismReport, text: string,
       return;
     }
 
-    const isHeading = trimmedPara.length < 80 && !trimmedPara.endsWith(".") && !trimmedPara.endsWith(",");
+    const isBulletOrNumbered = /^(\d+[\.\)]\s|[-•●▪▸►◦‣⁃]\s|[a-zA-Z][\.\)]\s|[\u0600-\u06FF\u0750-\u077F]+[\.\)])/.test(trimmedPara);
+    const isHeading = !isBulletOrNumbered && trimmedPara.length < 80 && !trimmedPara.endsWith(".") && !trimmedPara.endsWith(",");
     const isReferenceHeading = /^(references|bibliography|works cited|citations|reference list)$/i.test(trimmedPara);
     if (isReferenceHeading) inReferenceSection = true;
     const isRefEntry = inReferenceSection && !isReferenceHeading;
