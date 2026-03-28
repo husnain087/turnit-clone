@@ -135,8 +135,13 @@ export function generateSimilarityReport(report: PlagiarismReport, text: string,
     doc.setTextColor(50, 50, 50);
     doc.text(label, m, y);
     doc.setFont("helvetica", "normal");
-    doc.text(` ${value}`, m + doc.getTextWidth(label) + 2, y);
-    y += 6;
+    const labelW = doc.getTextWidth(label) + 2;
+    const valueMaxW = maxW - labelW;
+    const valueLines = doc.splitTextToSize(` ${value}`, valueMaxW);
+    valueLines.forEach((vl: string, vi: number) => {
+      doc.text(vl, m + labelW, y + vi * 5);
+    });
+    y += Math.max(6, valueLines.length * 5 + 1);
   });
 
   // Text positioned inside the box with inner padding
@@ -379,7 +384,8 @@ export function generateSimilarityReport(report: PlagiarismReport, text: string,
   doc.setFontSize(11);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(80, 80, 80);
-  doc.text(fileName, m, y);
+  const origNameLines = doc.splitTextToSize(fileName, maxW);
+  origNameLines.forEach((nl: string) => { doc.text(nl, m, y); y += 5; });
   y += 3;
   doc.setDrawColor(180, 180, 180);
   doc.line(m, y, pw - m, y);
@@ -561,7 +567,8 @@ export function generateSimilarityReport(report: PlagiarismReport, text: string,
   doc.setFontSize(16);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(80, 80, 80);
-  doc.text(fileName, m, y);
+  const gmNameLines = doc.splitTextToSize(fileName, maxW);
+  gmNameLines.forEach((nl: string) => { doc.text(nl, m, y); y += 7; });
   y += 3;
   doc.setDrawColor(180, 180, 180);
   doc.line(m, y, pw - m, y);
