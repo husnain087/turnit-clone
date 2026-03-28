@@ -87,6 +87,7 @@ CRITICAL RULES:
 - paraphrase_score MUST be between 3 and 70.
 - NEVER return 0 for any score. Even completely original text has some baseline similarity (5-10%).
 - You MUST flag at least 3 sections minimum.
+- CRITICAL: When flagging text sections, copy the EXACT text verbatim from the input. Do NOT alter, reformat, remove bullet points, numbering, or any formatting. If the original text has bullet points (•, -, 1., a., etc.), numbered lists, or special formatting, keep it EXACTLY as-is.
 - Provide your summary and recommendations in the SAME language as the input text.
 
 For SIMILARITY analysis:
