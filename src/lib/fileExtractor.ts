@@ -36,29 +36,57 @@ export async function extractTextFromFile(file: File): Promise<string> {
     return result.value;
   }
 
-  // DOC (old format) - basic text extraction
+  // DOC (old format) - text extraction supporting all languages
   if (ext === "doc" || type === "application/msword") {
     const arrayBuffer = await file.arrayBuffer();
     const uint8 = new Uint8Array(arrayBuffer);
-    // Extract readable text from binary .doc format
-    const textChunks: string[] = [];
-    let currentChunk = "";
-    for (let i = 0; i < uint8.length; i++) {
-      const byte = uint8[i];
-      // Accept printable ASCII, newlines, tabs
-      if ((byte >= 32 && byte <= 126) || byte === 10 || byte === 13 || byte === 9) {
-        currentChunk += String.fromCharCode(byte);
-      } else {
-        if (currentChunk.trim().length > 3) {
-          textChunks.push(currentChunk.trim());
+
+    // Try UTF-16LE first (Word .doc stores text internally as UTF-16LE)
+    const tryUtf16 = (): string => {
+      const uint16 = new Uint16Array(arrayBuffer.byteLength % 2 === 0 ? arrayBuffer : arrayBuffer.slice(0, arrayBuffer.byteLength - 1));
+      const chunks: string[] = [];
+      let chunk = "";
+      for (let i = 0; i < uint16.length; i++) {
+        const code = uint16[i];
+        // Accept printable characters across all Unicode planes, newlines, tabs
+        if ((code >= 32 && code !== 0xFFFE && code !== 0xFFFF) || code === 10 || code === 13 || code === 9) {
+          chunk += String.fromCharCode(code);
+        } else {
+          if (chunk.trim().length > 3) chunks.push(chunk.trim());
+          chunk = "";
         }
-        currentChunk = "";
       }
-    }
-    if (currentChunk.trim().length > 3) {
-      textChunks.push(currentChunk.trim());
-    }
-    const extracted = textChunks.join(" ").replace(/\s+/g, " ").trim();
+      if (chunk.trim().length > 3) chunks.push(chunk.trim());
+      return chunks.join(" ").replace(/\s{3,}/g, " ").trim();
+    };
+
+    // Also try reading as UTF-8 for modern .doc variants
+    const tryUtf8 = (): string => {
+      const decoder = new TextDecoder("utf-8", { fatal: false });
+      const decoded = decoder.decode(uint8);
+      // Filter out control chars but keep all Unicode printable chars
+      const cleaned = decoded.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, " ");
+      const chunks: string[] = [];
+      let chunk = "";
+      for (const char of cleaned) {
+        const code = char.codePointAt(0)!;
+        if (code >= 32 || code === 10 || code === 13 || code === 9) {
+          chunk += char;
+        } else {
+          if (chunk.trim().length > 3) chunks.push(chunk.trim());
+          chunk = "";
+        }
+      }
+      if (chunk.trim().length > 3) chunks.push(chunk.trim());
+      return chunks.join(" ").replace(/\s{3,}/g, " ").trim();
+    };
+
+    const utf16Result = tryUtf16();
+    const utf8Result = tryUtf8();
+
+    // Pick the result with more meaningful content (longer usually = better extraction)
+    const extracted = utf16Result.length > utf8Result.length ? utf16Result : utf8Result;
+
     if (!extracted || extracted.length < 10) {
       throw new Error("Could not extract text from .doc file. Please save as .docx and try again.");
     }
