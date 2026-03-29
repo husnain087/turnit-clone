@@ -30,6 +30,7 @@ export function generateAIWritingReport(report: PlagiarismReport, text: string, 
     }
   };
 
+  // Preserve exact filename as uploaded - no encoding changes
   const fileName = title || "Document";
   const submissionId = `trn:oid:::1:${Math.floor(Math.random() * 9000000000) + 1000000000}`;
   const now = new Date();

@@ -33,6 +33,7 @@ export function generateSimilarityReport(report: PlagiarismReport, text: string,
     }
   };
 
+  // Preserve exact filename as uploaded - no encoding changes
   const fileName = title || "Document";
   const submissionId = `${Math.floor(Math.random() * 9000000000) + 1000000000}`;
   const now = new Date();
