@@ -90,9 +90,9 @@ export async function generateAIWritingReport(report: PlagiarismReport, text: st
   doc.text("2 1", m, y);
   y += 14;
 
-  // File name as subtitle
+  // File name as subtitle - use Unicode font for non-Latin filenames
   doc.setFontSize(18);
-  doc.setFont("helvetica", "bold");
+  setFontForText(doc, fileName, unicodeFontAvailable, "helvetica", "bold");
   doc.setTextColor(50, 50, 50);
   const titleLines = doc.splitTextToSize(fileName, maxW);
   titleLines.forEach((line: string) => {
