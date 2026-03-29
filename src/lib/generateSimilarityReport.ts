@@ -100,6 +100,7 @@ export async function generateSimilarityReport(report: PlagiarismReport, text: s
   // Auto-size filename to fit page width, wrapping if needed
   const coverMaxW = pw - m * 2 - 10;
   let coverFontSize = 36;
+  setFontForText(doc, fileName, unicodeFontAvailable, "helvetica", "normal");
   doc.setFontSize(coverFontSize);
   let nameWidth = doc.getTextWidth(fileName);
   // Shrink font if too wide even for wrapping
