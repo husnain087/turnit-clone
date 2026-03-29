@@ -527,7 +527,7 @@ export async function generateAIWritingReport(report: PlagiarismReport, text: st
         } else {
           doc.setTextColor(50, 50, 50);
         }
-        doc.setFont("helvetica", "normal");
+        setFontForText(doc, w.text, unicodeFontAvailable, "helvetica", "normal");
         doc.setFontSize(textFontSize);
         doc.text(w.text, x, y);
         x += ww + spaceW;
