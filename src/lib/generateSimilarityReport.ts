@@ -256,7 +256,11 @@ export async function generateSimilarityReport(report: PlagiarismReport, text: s
     }
 
     doc.setFontSize(textFontSize);
-    doc.setFont("times", isHeading ? "bold" : "normal");
+    if (unicodeFontAvailable && hasNonLatinChars(trimmedPara)) {
+      doc.setFont("NotoSansSC", "normal");
+    } else {
+      doc.setFont("times", isHeading ? "bold" : "normal");
+    }
 
     // Left-aligned rendering with word-level highlighting
     const words = trimmedPara.split(/(\s+)/);
@@ -358,7 +362,11 @@ export async function generateSimilarityReport(report: PlagiarismReport, text: s
         } else {
           doc.setTextColor(30, 30, 30);
         }
-        doc.setFont("times", isHeading ? "bold" : "normal");
+        if (unicodeFontAvailable && hasNonLatinChars(w.text)) {
+          doc.setFont("NotoSansSC", "normal");
+        } else {
+          doc.setFont("times", isHeading ? "bold" : "normal");
+        }
         // Check if this word is a URL
         const isUrl = /^https?:\/\/\S+$/i.test(w.text);
         if (isRefEntry && isUrl) {
