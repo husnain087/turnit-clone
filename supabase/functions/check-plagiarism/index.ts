@@ -64,8 +64,9 @@ serve(async (req) => {
 
     const words = content.trim().split(/\s+/);
     const wordCount = words.length;
-    // Truncate for AI analysis
-    const textForAnalysis = content.slice(0, 8000);
+    // Send full content for analysis - Gemini 2.5 Pro supports large context
+    // Only truncate extremely long documents (>100k chars) to stay within limits
+    const textForAnalysis = content.slice(0, 100000);
 
     // Call Lovable AI for analysis using tool calling for structured output
     const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
