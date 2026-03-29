@@ -64,8 +64,9 @@ serve(async (req) => {
 
     const words = content.trim().split(/\s+/);
     const wordCount = words.length;
-    // Truncate for AI analysis
-    const textForAnalysis = content.slice(0, 8000);
+    // Send full content for analysis - Gemini 2.5 Pro supports large context
+    // Only truncate extremely long documents (>100k chars) to stay within limits
+    const textForAnalysis = content.slice(0, 100000);
 
     // Call Lovable AI for analysis using tool calling for structured output
     const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -107,7 +108,7 @@ Be realistic and nuanced. Academic writing naturally has some similarity to exis
           },
           {
             role: 'user',
-            content: `Analyze this text (${wordCount} words) for plagiarism similarity and AI writing detection. Remember: scores MUST be non-zero and realistic.\n\n${textForAnalysis}`
+            content: `Analyze this COMPLETE text (${wordCount} words) for plagiarism similarity and AI writing detection. You MUST analyze the ENTIRE document from beginning to end, not just the first few paragraphs. Flag sections from ALL parts of the document (beginning, middle, and end). Scores MUST be non-zero and realistic.\n\n${textForAnalysis}`
           }
         ],
         tools: [
@@ -264,7 +265,7 @@ Be realistic and nuanced. Academic writing naturally has some similarity to exis
           paraphrase_score: report.paraphrase_score,
           match_count: report.flagged_sections.length,
           results: report,
-          content: content.slice(0, 10000),
+          content: content.slice(0, 100000),
         })
         .eq('id', checkId);
     }
