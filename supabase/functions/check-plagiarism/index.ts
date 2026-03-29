@@ -265,7 +265,7 @@ Be realistic and nuanced. Academic writing naturally has some similarity to exis
           paraphrase_score: report.paraphrase_score,
           match_count: report.flagged_sections.length,
           results: report,
-          content: content.slice(0, 10000),
+          content: content.slice(0, 100000),
         })
         .eq('id', checkId);
     }
