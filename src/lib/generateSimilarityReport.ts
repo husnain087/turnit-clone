@@ -36,6 +36,9 @@ export async function generateSimilarityReport(report: PlagiarismReport, text: s
 
   // Preserve exact filename as uploaded - no encoding changes
   const fileName = title || "Document";
+
+  // Register Unicode font if filename contains non-Latin characters
+  const unicodeFontAvailable = await registerUnicodeFontIfNeeded(doc, fileName + text);
   const submissionId = `${Math.floor(Math.random() * 9000000000) + 1000000000}`;
   const now = new Date();
   const dateStr = now.toLocaleString("en-US", {
