@@ -1,5 +1,6 @@
 import jsPDF from "jspdf";
 import { TURNITIN_HEADER_LOGO_BASE64, FAQ_DIAGRAM_BASE64, ICON_DOC_BASE64, ICON_SUBMIT_BASE64, ICON_UNIVERSITY_BASE64, AI_ROBOT_ICON_BASE64, AI_HEAD_ICON_BASE64 } from "./pdfAssets";
+import { registerUnicodeFontIfNeeded, setFontForText, hasNonLatinChars } from "./pdfFontLoader";
 
 interface PlagiarismReport {
   similarity_score: number;
@@ -10,7 +11,7 @@ interface PlagiarismReport {
   recommendations: string[];
 }
 
-export function generateAIWritingReport(report: PlagiarismReport, text: string, title?: string) {
+export async function generateAIWritingReport(report: PlagiarismReport, text: string, title?: string) {
   const doc = new jsPDF();
   const pw = doc.internal.pageSize.getWidth();
   const ph = doc.internal.pageSize.getHeight();
@@ -30,7 +31,11 @@ export function generateAIWritingReport(report: PlagiarismReport, text: string, 
     }
   };
 
+  // Preserve exact filename as uploaded - no encoding changes
   const fileName = title || "Document";
+
+  // Register Unicode font if filename contains non-Latin characters
+  const unicodeFontAvailable = await registerUnicodeFontIfNeeded(doc, fileName + text);
   const submissionId = `trn:oid:::1:${Math.floor(Math.random() * 9000000000) + 1000000000}`;
   const now = new Date();
   const dateStr = now.toLocaleString("en-US", {
@@ -85,9 +90,9 @@ export function generateAIWritingReport(report: PlagiarismReport, text: string, 
   doc.text("2 1", m, y);
   y += 14;
 
-  // File name as subtitle
+  // File name as subtitle - use Unicode font for non-Latin filenames
   doc.setFontSize(18);
-  doc.setFont("helvetica", "bold");
+  setFontForText(doc, fileName, unicodeFontAvailable, "helvetica", "bold");
   doc.setTextColor(50, 50, 50);
   const titleLines = doc.splitTextToSize(fileName, maxW);
   titleLines.forEach((line: string) => {
@@ -138,10 +143,14 @@ export function generateAIWritingReport(report: PlagiarismReport, text: string, 
     doc.setTextColor(120, 120, 120);
     doc.text(label, m, y);
     y += 5;
-    doc.setFont("helvetica", "bold");
+    setFontForText(doc, value, unicodeFontAvailable, "helvetica", "bold");
     doc.setTextColor(50, 50, 50);
-    const truncVal = value.length > 40 ? value.slice(0, 37) + "..." : value;
-    doc.text(truncVal, m, y);
+    const valMaxW = maxW - 50;
+    const valueLines = doc.splitTextToSize(value, valMaxW);
+    valueLines.forEach((vl: string, vi: number) => {
+      doc.text(vl, m, y + vi * 5);
+    });
+    y += Math.max(10, valueLines.length * 5 + 5);
     y += 10;
   });
 
@@ -518,7 +527,7 @@ export function generateAIWritingReport(report: PlagiarismReport, text: string, 
         } else {
           doc.setTextColor(50, 50, 50);
         }
-        doc.setFont("helvetica", "normal");
+        setFontForText(doc, w.text, unicodeFontAvailable, "helvetica", "normal");
         doc.setFontSize(textFontSize);
         doc.text(w.text, x, y);
         x += ww + spaceW;
@@ -548,6 +557,7 @@ export function generateAIWritingReport(report: PlagiarismReport, text: string, 
     drawFooter(p, totalPages, section);
   }
 
+  // Use exact original filename without any modification
   const safeName = (title || "Document").replace(/\.[^/.]+$/, "");
   doc.save(`${safeName}.pdf`);
 }

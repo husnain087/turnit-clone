@@ -1,4 +1,5 @@
 import jsPDF from "jspdf";
+import { registerUnicodeFontIfNeeded, setFontForText, hasNonLatinChars } from "./pdfFontLoader";
 
 interface PlagiarismReport {
   similarity_score: number;
@@ -9,7 +10,7 @@ interface PlagiarismReport {
   recommendations: string[];
 }
 
-export function generateSimilarityReport(report: PlagiarismReport, text: string, title?: string) {
+export async function generateSimilarityReport(report: PlagiarismReport, text: string, title?: string) {
   const doc = new jsPDF({ format: [240, 297] });
   const pw = doc.internal.pageSize.getWidth();
   const ph = doc.internal.pageSize.getHeight();
@@ -33,7 +34,11 @@ export function generateSimilarityReport(report: PlagiarismReport, text: string,
     }
   };
 
+  // Preserve exact filename as uploaded - no encoding changes
   const fileName = title || "Document";
+
+  // Register Unicode font if filename contains non-Latin characters
+  const unicodeFontAvailable = await registerUnicodeFontIfNeeded(doc, fileName + text);
   const submissionId = `${Math.floor(Math.random() * 9000000000) + 1000000000}`;
   const now = new Date();
   const dateStr = now.toLocaleString("en-US", {
@@ -95,6 +100,7 @@ export function generateSimilarityReport(report: PlagiarismReport, text: string,
   // Auto-size filename to fit page width, wrapping if needed
   const coverMaxW = pw - m * 2 - 10;
   let coverFontSize = 36;
+  setFontForText(doc, fileName, unicodeFontAvailable, "helvetica", "normal");
   doc.setFontSize(coverFontSize);
   let nameWidth = doc.getTextWidth(fileName);
   // Shrink font if too wide even for wrapping
@@ -250,7 +256,11 @@ export function generateSimilarityReport(report: PlagiarismReport, text: string,
     }
 
     doc.setFontSize(textFontSize);
-    doc.setFont("times", isHeading ? "bold" : "normal");
+    if (unicodeFontAvailable && hasNonLatinChars(trimmedPara)) {
+      doc.setFont("NotoSansSC", "normal");
+    } else {
+      doc.setFont("times", isHeading ? "bold" : "normal");
+    }
 
     // Left-aligned rendering with word-level highlighting
     const words = trimmedPara.split(/(\s+)/);
@@ -352,7 +362,11 @@ export function generateSimilarityReport(report: PlagiarismReport, text: string,
         } else {
           doc.setTextColor(30, 30, 30);
         }
-        doc.setFont("times", isHeading ? "bold" : "normal");
+        if (unicodeFontAvailable && hasNonLatinChars(w.text)) {
+          doc.setFont("NotoSansSC", "normal");
+        } else {
+          doc.setFont("times", isHeading ? "bold" : "normal");
+        }
         // Check if this word is a URL
         const isUrl = /^https?:\/\/\S+$/i.test(w.text);
         if (isRefEntry && isUrl) {
@@ -633,6 +647,7 @@ export function generateSimilarityReport(report: PlagiarismReport, text: string,
     // Footers removed for similarity report
   }
 
+  // Use exact original filename without any modification
   const safeName = (title || "Document").replace(/\.[^/.]+$/, "");
   doc.save(`${safeName}.pdf`);
 }
