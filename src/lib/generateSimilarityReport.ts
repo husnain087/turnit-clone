@@ -633,6 +633,7 @@ export function generateSimilarityReport(report: PlagiarismReport, text: string,
     // Footers removed for similarity report
   }
 
+  // Use exact original filename without any modification
   const safeName = (title || "Document").replace(/\.[^/.]+$/, "");
   doc.save(`${safeName}.pdf`);
 }

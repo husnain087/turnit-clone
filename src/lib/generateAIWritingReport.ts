@@ -548,6 +548,7 @@ export function generateAIWritingReport(report: PlagiarismReport, text: string, 
     drawFooter(p, totalPages, section);
   }
 
+  // Use exact original filename without any modification
   const safeName = (title || "Document").replace(/\.[^/.]+$/, "");
   doc.save(`${safeName}.pdf`);
 }
