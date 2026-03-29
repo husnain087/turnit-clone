@@ -143,10 +143,14 @@ export async function generateAIWritingReport(report: PlagiarismReport, text: st
     doc.setTextColor(120, 120, 120);
     doc.text(label, m, y);
     y += 5;
-    doc.setFont("helvetica", "bold");
+    setFontForText(doc, value, unicodeFontAvailable, "helvetica", "bold");
     doc.setTextColor(50, 50, 50);
-    const truncVal = value.length > 40 ? value.slice(0, 37) + "..." : value;
-    doc.text(truncVal, m, y);
+    const valMaxW = maxW - 50;
+    const valueLines = doc.splitTextToSize(value, valMaxW);
+    valueLines.forEach((vl: string, vi: number) => {
+      doc.text(vl, m, y + vi * 5);
+    });
+    y += Math.max(10, valueLines.length * 5 + 5);
     y += 10;
   });
 
