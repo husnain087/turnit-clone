@@ -1,4 +1,5 @@
 import jsPDF from "jspdf";
+import { registerUnicodeFontIfNeeded, setFontForText, hasNonLatinChars } from "./pdfFontLoader";
 
 interface PlagiarismReport {
   similarity_score: number;
@@ -9,7 +10,7 @@ interface PlagiarismReport {
   recommendations: string[];
 }
 
-export function generateSimilarityReport(report: PlagiarismReport, text: string, title?: string) {
+export async function generateSimilarityReport(report: PlagiarismReport, text: string, title?: string) {
   const doc = new jsPDF({ format: [240, 297] });
   const pw = doc.internal.pageSize.getWidth();
   const ph = doc.internal.pageSize.getHeight();

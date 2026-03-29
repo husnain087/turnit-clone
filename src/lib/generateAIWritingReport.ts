@@ -1,5 +1,6 @@
 import jsPDF from "jspdf";
 import { TURNITIN_HEADER_LOGO_BASE64, FAQ_DIAGRAM_BASE64, ICON_DOC_BASE64, ICON_SUBMIT_BASE64, ICON_UNIVERSITY_BASE64, AI_ROBOT_ICON_BASE64, AI_HEAD_ICON_BASE64 } from "./pdfAssets";
+import { registerUnicodeFontIfNeeded, setFontForText, hasNonLatinChars } from "./pdfFontLoader";
 
 interface PlagiarismReport {
   similarity_score: number;
@@ -10,7 +11,7 @@ interface PlagiarismReport {
   recommendations: string[];
 }
 
-export function generateAIWritingReport(report: PlagiarismReport, text: string, title?: string) {
+export async function generateAIWritingReport(report: PlagiarismReport, text: string, title?: string) {
   const doc = new jsPDF();
   const pw = doc.internal.pageSize.getWidth();
   const ph = doc.internal.pageSize.getHeight();
